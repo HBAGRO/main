@@ -1,8 +1,10 @@
+import AuthWrapper from '@/components/AuthWrapper'
+import Chat from '@/components/Chat'
+
 export default function Home() {
   return (
-    <main className="container">
-      <h1>Welcome to Your App</h1>
-      <p>Your application is now running successfully!</p>
-    </main>
+    <AuthWrapper>
+      {(user) => <Chat user={user} />}
+    </AuthWrapper>
   )
 }
