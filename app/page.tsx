@@ -1,10 +1,5 @@
-import AuthWrapper from '@/components/AuthWrapper'
-import Chat from '@/components/Chat'
+import ChatApp from '@/components/ChatApp'
 
 export default function Home() {
-  return (
-    <AuthWrapper>
-      {(user) => <Chat user={user} />}
-    </AuthWrapper>
-  )
+  return <ChatApp />
 }
