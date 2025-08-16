@@ -37,6 +37,70 @@ export default function Chat({ user }: ChatProps) {
     }
   }, [user])
 
+  // Real-time subscription for messages
+  useEffect(() => {
+    if (!currentChatId) return
+
+    const subscription = supabase
+      .channel(`messages:${currentChatId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'messages',
+          filter: `chat_id=eq.${currentChatId}`,
+        },
+        (payload) => {
+          const newMessage = payload.new as Message
+          setMessages(prev => {
+            // Avoid duplicates
+            if (prev.some(msg => msg.id === newMessage.id)) {
+              return prev
+            }
+            return [...prev, newMessage]
+          })
+        }
+      )
+      .subscribe()
+
+    return () => {
+      subscription.unsubscribe()
+    }
+  }, [currentChatId])
+
+  // Real-time subscription for chats
+  useEffect(() => {
+    if (!user) return
+
+    const subscription = supabase
+      .channel(`chats:${user.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'chats',
+          filter: `user_id=eq.${user.id}`,
+        },
+        (payload) => {
+          const newChat = payload.new as Chat
+          setChats(prev => {
+            // Avoid duplicates
+            if (prev.some(chat => chat.id === newChat.id)) {
+              return prev
+            }
+            return [newChat, ...prev]
+          })
+        }
+      )
+      .subscribe()
+
+    return () => {
+      subscription.unsubscribe()
+    }
+  }, [user])
+
   useEffect(() => {
     scrollToBottom()
   }, [messages])
